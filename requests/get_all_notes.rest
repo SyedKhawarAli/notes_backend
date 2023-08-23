@@ -1,1 +1,10 @@
 GET http://localhost:3001/api/notes
+
+### Add new note
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "Ensure that everything is working as expected",
+    "important": true
+}

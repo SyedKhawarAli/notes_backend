@@ -1,6 +1,11 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
+const mongoose = require('mongoose')
+const Note = require('./models/note')
 const app = express()
+
+const PORT = process.env.PORT
 
 app.use(cors())
 
@@ -49,51 +54,42 @@ app.post('/api/notes', (request, response) => {
     
     const body = request.body
 
-    if (!body.content) {
-        return response.status(400).json({
-            error: 'content missing'
-        })
+    if (body.content === undefined) {
+        return response.status(400).json({ error: 'content missing' })
     }
 
-    const note = {
-        id: generateId(),
+    const note = new Note({
         content: body.content,
         important: body.important || false,
-    }
-    
-    notes = notes.concat(note)
+    })
 
-    response.json(note)
-})
-
-app.get('/', (request, response) => {
-    response.send('<h1>Hello World!</h1>')
+    note.save().then(savedNote => {
+        response.json(savedNote)
+    })
 })
 
 app.get('/api/notes', (request, response) => {
-    response.json(notes)
+    Note.find({}).then(notes => {
+        response.json(notes)
+    })
 })
 
 app.get('/api/notes/:id', (request, response) => {
-    let id = Number(request.params.id)
-    let note = notes.find(note => note.id === id)
-    if (note) {
+    Note.findById(request.params.id).then(note => {
         response.json(note)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
-    let id = Number(request.params.id)
-    notes = notes.filter(note => note.id !== id)
-
-    response.status(204).end()
+    Note.findByIdAndRemove(request.params.id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
 app.use(unkwonEndpoint)
 
-const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
