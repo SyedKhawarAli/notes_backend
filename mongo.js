@@ -1,17 +1,11 @@
 const mongoose = require('mongoose')
+const config = require('./utils/config')
+const logger = require('./utils/logger')
 
-if (process.argv.length < 3) {
-    console.log('give password as argument')
-    process.exit(1)
-}
-
-const password = process.argv[2]
-
-const url = `mongodb+srv://khawarali5:${password}@cluster0.jcjx9zb.mongodb.net/noteApp?retryWrites=true&w=majority`
-
+logger.info(`Server running on port ${config.PORT}`)
 
 mongoose.set('strictQuery', false)
-mongoose.connect(url)
+mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
 
 const noteSchema = new mongoose.Schema({
     content: String,
@@ -19,16 +13,6 @@ const noteSchema = new mongoose.Schema({
 })
 
 const Note = mongoose.model('Note', noteSchema)
-
-// const note = new Note({
-//     content: 'GET and POST are the most important methods of HTTP protocol',
-//     important: true,
-// })
-
-// note.save().then(result => {
-//     console.log('note saved!')
-//     mongoose.connection.close()
-// })
 
 Note.find({ important: true }).then(result => {
     result.forEach(note => {
